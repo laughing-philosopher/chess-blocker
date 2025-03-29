@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Chess Timer",
+  "version": "1.0",
+  "description": "Limits Chess.com to 30 minutes per day.",
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://www.chess.com/*"
+  ]
+}
