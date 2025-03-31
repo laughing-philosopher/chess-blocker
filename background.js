@@ -1,10 +1,11 @@
 // background.js
-const CHESS_URL = "https://www.chess.com/home";
+const CHESS_URL = "https://www.chess.com";
 const REDIRECT_URL = "https://mail.google.com/mail/u/0/";
 const TIME_LIMIT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.set({ startTime: null, usedTime: 0, lastDate: null });
+    updateBadge();
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -27,5 +28,29 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                 chrome.storage.local.set({ startTime: now.getTime() });
             }
         }
+        updateBadge();
     });
 });
+
+// Function to update badge text
+function updateBadge() {
+    chrome.storage.local.get(["startTime", "usedTime", "lastDate"], (data) => {
+        const now = new Date();
+        const today = now.toDateString();
+        let timeLeft = TIME_LIMIT / 60000; // Convert milliseconds to minutes
+
+        if (data.lastDate === today) {
+            const elapsed = data.startTime ? now.getTime() - data.startTime : 0;
+            const totalUsed = data.usedTime + elapsed;
+            timeLeft = Math.max(0, (TIME_LIMIT - totalUsed) / 60000); // Convert to minutes
+        }
+
+        if (chrome.action && chrome.action.setBadgeText) {
+            chrome.action.setBadgeText({ text: `${Math.ceil(timeLeft)}` });
+            chrome.action.setBadgeBackgroundColor({ color: "#FF0000" });
+        }
+    });
+}
+
+// Update badge every minute
+setInterval(updateBadge, 60000);
